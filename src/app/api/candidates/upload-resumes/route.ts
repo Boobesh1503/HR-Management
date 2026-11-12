@@ -21,9 +21,10 @@ export async function POST(request: NextRequest) {
     const addedCandidates: any[] = [];
 
     for (const file of files) {
+      if (!file || typeof file === "string") continue;
       try {
         const buffer = Buffer.from(await file.arrayBuffer());
-        const originalName = file.name;
+        const originalName = file.name || "resume.pdf";
 
         // Parse resume — data extract மட்டும், file save வேண்டாம்
         const parsed = await parseResumeBuffer(buffer, originalName);

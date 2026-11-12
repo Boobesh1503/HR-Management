@@ -1,5 +1,3 @@
-// @ts-ignore
-const { PDFParse } = require("pdf-parse");
 import { categorizeState } from "./stateClassifier";
 
 export interface ParsedResumeData {
@@ -22,10 +20,16 @@ export async function parseResumeBuffer(
 
   try {
     if (originalFilename.toLowerCase().endsWith(".pdf")) {
-      const parser = new PDFParse(new Uint8Array(buffer));
-      await parser.load();
-      const res = await parser.getText();
-      text = res.text || "";
+      try {
+        const { PDFParse } = require("pdf-parse");
+        const parser = new PDFParse(new Uint8Array(buffer));
+        await parser.load();
+        const res = await parser.getText();
+        text = res.text || "";
+      } catch (pdfErr) {
+        console.warn(`[ResumeParser] pdf-parse error for ${originalFilename}:`, pdfErr);
+        text = buffer.toString("utf-8");
+      }
     } else {
       text = buffer.toString("utf-8");
     }

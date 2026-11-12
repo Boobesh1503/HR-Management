@@ -200,6 +200,8 @@ export default function CandidatesDashboard() {
               msg = "File payload too large for serverless function limit (4.5MB).";
             } else if (res.status === 504) {
               msg = "Server timed out processing these files.";
+            } else {
+              msg = `Server Error (${res.status}): ${errText.slice(0, 120)}`;
             }
           }
           throw new Error(msg);
