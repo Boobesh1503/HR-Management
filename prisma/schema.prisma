@@ -1,0 +1,95 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Candidate {
+  id                 String             @id @default(cuid())
+  name               String
+  email              String             @unique
+  phone              String?
+  city               String?
+  state              String             @default("Uncategorized")
+  skills             String?
+  indeedResumeUrl    String?
+  uploadedResumeUrl  String?
+  status             String             @default("NEW") // NEW, INVITED, FORM_COMPLETED, CONFIRMED, RESCHEDULED, ATTENDED, SELECTED, REJECTED, ON_HOLD
+  schedulingToken    String             @unique @default(cuid())
+  
+  // Qualification & Scheduling details collected from form
+  qualification      String?
+  degreeCourse       String?
+  fullAddress        String?
+  
+  appliedAt          DateTime           @default(now())
+  invitedAt          DateTime?
+  notes              String?
+  
+  bookings           InterviewBooking[]
+  emailLogs          EmailLog[]
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+}
+
+model InterviewSlot {
+  id          String            @id @default(cuid())
+  date        String            // Format: YYYY-MM-DD
+  startTime   String            // Format: HH:mm (e.g. 10:00)
+  endTime     String            // Format: HH:mm (e.g. 10:30)
+  timeLabel   String            // Format: 10:00 AM - 10:30 AM
+  isAvailable Boolean           @default(true)
+  bookingId   String?           @unique
+  booking     InterviewBooking? @relation(fields: [bookingId], references: [id])
+  createdAt   DateTime          @default(now())
+}
+
+model InterviewBooking {
+  id                  String         @id @default(cuid())
+  candidateId         String
+  candidate           Candidate      @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  date                String         // YYYY-MM-DD
+  timeSlot            String         // "10:00 AM - 10:30 AM"
+  status              String         @default("PENDING_APPROVAL") // PENDING_APPROVAL, CONFIRMED, RESCHEDULED, CANCELLED, ATTENDED
+  meetingLink         String?
+  hrNotes             String?
+  confirmationSentAt  DateTime?
+  reminderSentAt      DateTime?
+  slot                InterviewSlot?
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+}
+
+model EmailLog {
+  id          String    @id @default(cuid())
+  candidateId String
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  type        String    // INVITATION, CONFIRMATION, REMINDER, RESCHEDULE_ACK, STATUS_UPDATE
+  subject     String
+  recipient   String
+  status      String    // SENT, FAILED, SIMULATED
+  error       String?
+  sentAt      DateTime  @default(now())
+}
+
+model AppSettings {
+  id                  String   @id @default("default")
+  companyName         String   @default("Acme Business Solutions")
+  companyWebsite      String   @default("https://example.com")
+  companyIntro        String   @default("We are a fast-growing growth consultancy empowering businesses across India with cutting-edge market intelligence.")
+  jobTitle            String   @default("Business Development Intern")
+  jobDescription      String   @default("Identify prospective clients, assist in lead generation and B2B client acquisition, research competitive trends, and support our senior sales leads.")
+  workingHours        String   @default("Monday to Friday, 10:00 AM - 6:00 PM (Hybrid/Office)")
+  defaultMeetingLink  String   @default("https://meet.google.com/abc-defg-hij")
+  slotDurationMinutes Int      @default(30) // 30 or 60
+  dailyStartTime      String   @default("10:00")
+  dailyEndTime        String   @default("17:00")
+  gmailUser           String   @default("")
+  gmailAppPassword    String   @default("")
+  updatedAt           DateTime @updatedAt
+}
+
