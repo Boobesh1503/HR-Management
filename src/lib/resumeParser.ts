@@ -60,10 +60,10 @@ export async function parseResumeBuffer(
   let name = "";
   const cleanFilename = originalFilename
     .replace(/\.pdf$/i, "")
-    .replace(/^resume/gi, "")
-    .replace(/resume|cv|biodata|profile|indeed/gi, "")
     .replace(/([a-z])([A-Z])/g, "$1 $2")
     .replace(/[_\-+.]/g, " ")
+    .replace(/\b(resume|cv|biodata|profile|indeed|aiml|ai|ml|cse|it|ece|eee|mech|civil|intern|internship|fresher|updated|latest|final)\b/gi, "")
+    .replace(/\s+/g, " ")
     .trim();
 
   if (cleanFilename.length > 2 && !cleanFilename.match(/^\d+$/)) {

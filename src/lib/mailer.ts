@@ -65,6 +65,12 @@ export async function sendEmail({ candidateId, to, subject, html, text, type }: 
   }
 }
 
+function getFirstName(name?: string): string {
+  if (!name || name === "Applicant") return "Candidate";
+  const clean = name.trim().split(/\s+/)[0];
+  return clean.charAt(0).toUpperCase() + clean.slice(1).toLowerCase();
+}
+
 // -------------------------------------------------------------
 // Email 1 – Initial Interview Invitation
 // -------------------------------------------------------------
@@ -76,6 +82,7 @@ export function generateInvitationEmail(data: {
 }) {
   const company = data.companyName || "Akodefy";
   const website = data.companyWebsite || "https://akodefy.com/";
+  const firstName = getFirstName(data.candidateName);
 
   return `
 <!DOCTYPE html>
@@ -90,7 +97,7 @@ export function generateInvitationEmail(data: {
   </style>
 </head>
 <body>
-  <p>Dear ${data.candidateName},</p>
+  <p>Dear ${firstName},</p>
 
   <p>Greetings from ${company}!</p>
 
@@ -133,6 +140,7 @@ export function generateConfirmationEmail(data: {
 }) {
   const company = data.companyName || "Akodefy";
   const duration = data.duration || "60 Minutes";
+  const firstName = getFirstName(data.candidateName);
 
   return `
 <!DOCTYPE html>
@@ -149,7 +157,7 @@ export function generateConfirmationEmail(data: {
   </style>
 </head>
 <body>
-  <p>Dear ${data.candidateName},</p>
+  <p>Dear ${firstName},</p>
 
   <p>Your interview for the Business Development Intern position has been confirmed.</p>
 
@@ -188,6 +196,7 @@ export function generateReminderEmail(data: {
   meetingLink: string;
 }) {
   const company = data.companyName || "Akodefy";
+  const firstName = getFirstName(data.candidateName);
 
   return `
 <!DOCTYPE html>
@@ -202,7 +211,7 @@ export function generateReminderEmail(data: {
   </style>
 </head>
 <body>
-  <p>Dear ${data.candidateName},</p>
+  <p>Dear ${firstName},</p>
 
   <p>This is a reminder regarding your upcoming interview.</p>
 
