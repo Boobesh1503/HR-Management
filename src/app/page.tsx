@@ -161,7 +161,8 @@ export default function CandidatesDashboard() {
 
     const files = Array.from(fileList);
     const totalFiles = files.length;
-    const CHUNK_SIZE = 10; // Process 10 files per micro-batch to prevent timeouts and RAM spikes
+    // Process 2 files at a time to stay well under Vercel's 4.5MB payload limit and 10s timeout
+    const CHUNK_SIZE = 2;
     let totalAdded = 0;
     let totalUpdated = 0;
     let totalProcessed = 0;
@@ -187,9 +188,26 @@ export default function CandidatesDashboard() {
           method: "POST",
           body: formData,
         });
+
+        if (!res.ok) {
+          const errText = await res.text();
+          let msg = `Server returned status ${res.status}`;
+          try {
+            const errJson = JSON.parse(errText);
+            if (errJson.error) msg = errJson.error;
+          } catch {
+            if (res.status === 413) {
+              msg = "File payload too large for serverless function limit (4.5MB).";
+            } else if (res.status === 504) {
+              msg = "Server timed out processing these files.";
+            }
+          }
+          throw new Error(msg);
+        }
+
         const data = await res.json();
 
-        if (res.ok && data.stats) {
+        if (data.stats) {
           totalAdded += data.stats.added || 0;
           totalUpdated += data.stats.updated || 0;
         }
