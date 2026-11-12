@@ -26,6 +26,23 @@ export async function POST(request: NextRequest) {
 
     const results = [];
     for (const candidate of candidates) {
+      // Validate email format and reject dummy/placeholder addresses to avoid Gmail bounce
+      const isValidEmail = candidate.email && 
+        candidate.email.includes("@") && 
+        candidate.email.includes(".") && 
+        !candidate.email.endsWith("@candidate.review") &&
+        !candidate.email.endsWith("@candidate.local");
+
+      if (!isValidEmail) {
+        results.push({
+          candidateId: candidate.id,
+          email: candidate.email,
+          success: false,
+          error: "Invalid or placeholder email address. Skipped to prevent Gmail bounce.",
+        });
+        continue;
+      }
+
       const schedulingUrl = `${baseUrl}/schedule/${candidate.schedulingToken}`;
       const emailHtml = generateInvitationEmail({
         candidateName: candidate.name,

@@ -29,9 +29,9 @@ export async function POST(request: NextRequest) {
         // Parse resume — data extract மட்டும், file save வேண்டாம்
         const parsed = await parseResumeBuffer(buffer, originalName);
 
-        if (!parsed.email || !parsed.email.includes("@")) {
+        if (!parsed.email || !parsed.email.includes("@") || !parsed.email.includes(".") || parsed.email.endsWith("@candidate.review")) {
           skippedCount++;
-          errors.push(`Could not detect email in: ${originalName}`);
+          errors.push(`Could not detect a valid email in: ${originalName}`);
           continue;
         }
 

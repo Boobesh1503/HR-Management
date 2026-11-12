@@ -43,12 +43,12 @@ export async function parseResumeBuffer(
   }
 
   // 1. Extract Email: from text or filename
-  const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i;
+  const emailRegex = /\b[A-Za-z0-9._%+-]{2,}@[A-Za-z0-9.-]+\.(?:com|in|org|net|edu|co|io|biz|info|me|co\.in)\b/i;
   let emailMatch = text.match(emailRegex);
   if (!emailMatch) {
     emailMatch = originalFilename.match(emailRegex);
   }
-  let email = emailMatch ? emailMatch[1].trim().toLowerCase() : "";
+  let email = emailMatch ? emailMatch[0].trim().toLowerCase() : "";
 
   // 2. Extract Phone: Indian mobile formats (+91, 10 digits starting with 6,7,8,9)
   const phoneRegex = /(?:\+91[\-\s]?)?[6-9]\d{4}[\-\s]?\d{5}/;
@@ -84,12 +84,6 @@ export async function parseResumeBuffer(
     } else {
       name = "Applicant";
     }
-  }
-
-  // If email was not found, create a deterministic email placeholder so the record is NOT lost!
-  if (!email) {
-    const slug = name.toLowerCase().replace(/[^a-z0-9]/g, "");
-    email = `${slug || "applicant"}_${phone ? phone.slice(-4) : Math.floor(Math.random() * 10000)}@candidate.review`;
   }
 
   // 4. Extract Location & State
